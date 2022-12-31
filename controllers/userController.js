@@ -26,6 +26,31 @@ const createUser = async (req, res) => {
   }
 };
 
+
+const loginUser = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const user = await User.findOne({ username });
+
+    let same = false;
+
+    if (user) {
+      same = await bcrypt.compare(password, user.password);
+    } else {
+      return res.status(401).json({
+        succeded: false,
+        error: 'There is no such user',
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      succeded: false,
+      error,
+    });
+  }
+};
+
 const getDashboardPage = async (req, res) => {
   const photos = await Photo.find({ user: res.locals.user._id });
   const user = await User.findById({ _id: res.locals.user._id }).populate([
