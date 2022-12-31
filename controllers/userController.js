@@ -26,7 +26,6 @@ const createUser = async (req, res) => {
   }
 };
 
-
 const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -43,12 +42,33 @@ const loginUser = async (req, res) => {
         error: 'There is no such user',
       });
     }
+
+    if (same) {
+      const token = createToken(user._id);
+      res.cookie('jwt', token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24,
+      });
+
+      res.redirect('/users/dashboard');
+    } else {
+      res.status(401).json({
+        succeded: false,
+        error: 'Paswords are not matched',
+      });
+    }
   } catch (error) {
     res.status(500).json({
       succeded: false,
       error,
     });
   }
+};
+
+const createToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+    expiresIn: '1d',
+  });
 };
 
 const getDashboardPage = async (req, res) => {
